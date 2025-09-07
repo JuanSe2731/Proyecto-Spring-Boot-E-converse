@@ -56,5 +56,5 @@ El proyecto busca integrar **backend, frontend y base de datos**, aplicando buen
 
 ### 1. Clonar el repositorio
 ```bash
-git clone https://github.com/tu-usuario/e-converse.git
+https://github.com/JuanSe2731/Proyecto-Spring-Boot-E-converse.git
 
