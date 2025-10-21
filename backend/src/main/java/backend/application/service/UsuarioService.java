@@ -3,6 +3,7 @@ package backend.application.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import backend.application.model.Usuario;
@@ -14,6 +15,9 @@ import jakarta.transaction.Transactional;
 public class UsuarioService implements IUsuarioService{
 	
 	@Autowired
+    private PasswordEncoder passwordEncoder;
+	
+	@Autowired
 	UsuarioRepository usuarioRepository;
 
 	@Override
@@ -23,7 +27,11 @@ public class UsuarioService implements IUsuarioService{
 
 	@Override
 	public Usuario nuevoUsuario(Usuario usuario) {
-		return usuarioRepository.save(usuario);
+		String contrasenaEncriptada = passwordEncoder.encode(usuario.getContrasena());
+        usuario.setContrasena(contrasenaEncriptada);
+        
+        // Guardar usuario en la BD
+        return usuarioRepository.save(usuario);
 	}
 
 	@Override
