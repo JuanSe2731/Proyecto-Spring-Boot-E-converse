@@ -39,28 +39,44 @@ async function handleRegister(event) {
     submitButton.textContent = 'Registrando...';
 
     try {
-        const response = await fetch('http://localhost:8080/api/auth/register', {
+        const response = await fetch('http://localhost:8080/auth/register', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': '*/*'
             },
             body: JSON.stringify({
-                nombre: username,
-                correo_unico: email,
-                contrasena: password,
-                id_rol: parseInt(userType) // Asegurar que sea un número
+                username: username,
+                email: email,
+                password: password,
+                rol: parseInt(userType) // Asegurar que sea un número
             })
         });
 
         const data = await response.json();
 
         if (response.ok) {
-            alert('Registro exitoso. Por favor, inicia sesión.');
-            window.location.href = '/index.html';
+            // Mostrar mensaje de éxito
+            errorMessage.textContent = '¡Registro exitoso!';
+            errorMessage.style.color = '#4CAF50';
+            errorMessage.classList.add('show');
+            
+            // Esperar 2 segundos antes de redirigir
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
         } else {
-            errorMessage.textContent = data.message || 'Error en el registro';
-            if (response.status === 400 && data.message.includes('correo')) {
-                errorMessage.textContent = 'El correo ya está registrado';
+            errorMessage.style.color = '#f44336';
+            if (response.status === 400) {
+                if (data.message?.toLowerCase().includes('correo') || data.message?.toLowerCase().includes('email')) {
+                    errorMessage.textContent = 'El correo electrónico ya está registrado';
+                } else if (data.message?.toLowerCase().includes('usuario') || data.message?.toLowerCase().includes('username')) {
+                    errorMessage.textContent = 'El nombre de usuario ya está registrado';
+                } else {
+                    errorMessage.textContent = data.message || 'Error en el registro. Por favor, verifica los datos.';
+                }
+            } else {
+                errorMessage.textContent = 'Error en el servidor. Por favor, intenta más tarde.';
             }
             errorMessage.classList.add('show');
         }

@@ -12,14 +12,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function validateSession() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = 'index.html';
+        window.location.href = '../../index.html';
         return;
     }
 
     try {
-        const response = await fetch('http://localhost:8080/api/auth/user-info', {
+        const response = await fetch('http://localhost:8080/auth/user-info', {
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'Accept': '*/*'
             }
         });
 
@@ -35,7 +36,7 @@ async function validateSession() {
 
     } catch (error) {
         console.error('Error:', error);
-        window.location.href = 'index.html';
+        window.location.href = '../../index.html';
     }
 }
 
@@ -230,5 +231,6 @@ window.onclick = function(event) {
 // Cerrar sesión
 function logout() {
     localStorage.removeItem('token');
-    window.location.href = 'index.html';
+    localStorage.removeItem('currentUser');
+    window.location.href = '../../index.html';
 }

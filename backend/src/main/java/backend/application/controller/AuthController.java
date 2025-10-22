@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5500", "http://127.0.0.1:5500"}, allowCredentials = "true")
 public class AuthController {
 	
 	@Autowired
@@ -27,6 +27,43 @@ public class AuthController {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
+
+    /**
+     * Endpoint para obtener información del usuario autenticado.
+     * Requiere token JWT válido.
+     */
+    @GetMapping("/user-info")
+    public ResponseEntity<?> getUserInfo(@RequestHeader("Authorization") String authHeader) {
+        try {
+            // Extraer el token del header (eliminar "Bearer ")
+            String token = authHeader.substring(7);
+            
+            // Validar el token y obtener el username
+            String username = jwtTokenUtil.getUsernameFromToken(token);
+            if (username == null) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Token inválido"));
+            }
+
+            // Cargar los detalles del usuario
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            
+            // Validar si el token es válido para este usuario
+            if (!jwtTokenUtil.validateToken(token, userDetails)) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Token inválido"));
+            }
+
+            // Crear respuesta con información del usuario
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("username", userDetails.getUsername());
+            userInfo.put("roles", userDetails.getAuthorities());
+            userInfo.put("isEnabled", userDetails.isEnabled());
+
+            return ResponseEntity.ok(userInfo);
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Error al obtener información del usuario"));
+        }
+    }
 
     /**
      * Endpoint para autenticación de usuarios.
@@ -85,5 +122,25 @@ public class AuthController {
             this.password = password;
         }
     }
+
+    public static class RegisterRequest {
+    private String nombre;
+    private String nombreUsuario;
+    private String correo;
+    private String contrasena;
+    private String direccion;
+
+    // Getters y setters
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getNombreUsuario() { return nombreUsuario; }
+    public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
+    public String getCorreo() { return correo; }
+    public void setCorreo(String correo) { this.correo = correo; }
+    public String getContrasena() { return contrasena; }
+    public void setContrasena(String contrasena) { this.contrasena = contrasena; }
+    public String getDireccion() { return direccion; }
+    public void setDireccion(String direccion) { this.direccion = direccion; }
+}
 
 }

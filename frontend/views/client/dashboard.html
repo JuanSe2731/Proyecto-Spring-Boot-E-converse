@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-converse - Dashboard</title>
+    <link rel="stylesheet" href="../../css/styles.css">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="store-container">
+        <!-- Barra de navegación -->
+        <nav class="main-nav">
+            <div class="nav-brand">
+                <h1>E-converse</h1>
+            </div>
+
+            <!-- Categorías -->
+            <div class="nav-categories">
+                <button class="category-button">Deportivos</button>
+                <button class="category-button">Casuales</button>
+                <button class="category-button">Formales</button>
+                <button class="category-button">Running</button>
+            </div>
+
+            <!-- Acciones de usuario -->
+            <div class="nav-actions">
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar productos...">
+                    <button class="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <div class="user-actions">
+                    <button class="cart-button">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-count">0</span>
+                    </button>
+                    <button id="logout-button">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Contenido principal -->
+        <main class="main-content">
+            <!-- Filtros laterales -->
+            <aside class="filters-sidebar">
+                <h2>Filtros</h2>
+                <div class="price-range">
+                    <h3>Rango de Precio</h3>
+                    <input type="range" min="0" max="1000" value="500" id="price-filter">
+                    <div class="price-inputs">
+                        <input type="number" id="min-price" placeholder="Min">
+                        <input type="number" id="max-price" placeholder="Max">
+                    </div>
+                </div>
+                
+                <div class="size-filter">
+                    <h3>Tallas</h3>
+                    <div class="size-options">
+                        <label><input type="checkbox" value="35"> 35</label>
+                        <label><input type="checkbox" value="36"> 36</label>
+                        <label><input type="checkbox" value="37"> 37</label>
+                        <label><input type="checkbox" value="38"> 38</label>
+                        <label><input type="checkbox" value="39"> 39</label>
+                        <label><input type="checkbox" value="40"> 40</label>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Cuadrícula de productos -->
+            <div class="products-grid" id="products-container">
+                <!-- Los productos se cargarán dinámicamente aquí -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Contenedor para notificaciones -->
+    <div id="notification-container"></div>
+
+    <script src="../../js/dashboard.js"></script>
+</body>
+</html>
