@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - E-converse</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="dashboard-nav">
+            <div class="user-info">
+                <span id="username-display"></span>
+                <button onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </nav>
+        <div class="dashboard-content">
+            <!-- Contenido específico del rol ADMIN -->
+            <div id="admin-content" style="display: none;">
+                <h2>Panel de Administración</h2>
+                <div class="admin-options">
+                    <button onclick="location.href='admin/usuarios.html'">Gestionar Usuarios</button>
+                    <button onclick="location.href='admin/productos.html'">Gestionar Productos</button>
+                    <button onclick="location.href='admin/categorias.html'">Gestionar Categorías</button>
+                    <button onclick="location.href='admin/pedidos.html'">Ver Todos los Pedidos</button>
+                </div>
+            </div>
+
+            <!-- Contenido específico del rol CLIENTE -->
+            <div id="client-content" style="display: none;">
+                <h2>Bienvenido a E-converse</h2>
+                <div class="client-options">
+                    <button onclick="location.href='client/productos.html'">Ver Productos</button>
+                    <button onclick="location.href='client/carrito.html'">Mi Carrito</button>
+                    <button onclick="location.href='client/pedidos.html'">Mis Pedidos</button>
+                    <button onclick="location.href='client/perfil.html'">Mi Perfil</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
