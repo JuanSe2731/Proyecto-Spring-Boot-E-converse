@@ -7,6 +7,8 @@ package backend.application.model;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  *
  * @author jhona
@@ -20,7 +22,7 @@ public class Rol {
     
     @Column(nullable = false, unique = true, length= 50)
     private String nombre;
-    
+    @JsonIgnore
     @OneToMany(mappedBy = "rol", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Usuario> usuarios;
 

@@ -39,7 +39,7 @@ async function handleLogin(event) {
 }
 
 // Remover mensaje de error cuando el usuario comienza a escribir
-document.getElementById('username').addEventListener('input', removeErrorMessage);
+document.getElementById('username').addEventListener('input', removeErrorMessage); // El id se mantiene como 'username' en el HTML
 document.getElementById('password').addEventListener('input', removeErrorMessage);
 
 function removeErrorMessage() {

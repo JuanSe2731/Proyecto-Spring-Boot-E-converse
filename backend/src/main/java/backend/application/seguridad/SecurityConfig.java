@@ -42,11 +42,26 @@ public class SecurityConfig {
                         "/webjars/**",
                         "/list/**",
                         "/auth/**",
-                        "/login.html"
+                        "/login.html",
+                        "/register.html",
+                        "/index.html",
+                        "/dashboard.html",
+                        "/views/**",
+                        "/css/**",
+                        "/js/**",
+                        "/images/**",
+                        "/admin/**"
                 ).permitAll()
 
-                // 🔓 Permitir login y registro
-                .requestMatchers("/api/auth/**").permitAll()
+                // 🔓 Permitir acceso a endpoints públicos
+                .requestMatchers(
+                    "/api/auth/**",
+                    "/api/productos/**",
+                    "/api/categorias/**",
+                    "/usuario/**",
+                    "/producto/**"
+
+                ).permitAll()
 
                 // 🔒 Todo lo demás requiere autenticación
                 .anyRequest().authenticated()

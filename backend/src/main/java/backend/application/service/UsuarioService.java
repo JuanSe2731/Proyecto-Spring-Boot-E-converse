@@ -29,7 +29,6 @@ public class UsuarioService implements IUsuarioService{
 	public Usuario nuevoUsuario(Usuario usuario) {
 		String contrasenaEncriptada = passwordEncoder.encode(usuario.getContrasena());
         usuario.setContrasena(contrasenaEncriptada);
-        
         // Guardar usuario en la BD
         return usuarioRepository.save(usuario);
 	}
@@ -49,7 +48,4 @@ public class UsuarioService implements IUsuarioService{
 		usuarioRepository.deleteById(id);
 		return 1;
 	}
-	
-	
-
 }
