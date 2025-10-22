@@ -10,7 +10,8 @@ import backend.application.model.Producto;
 import backend.application.service.ProductoService;
 
 @RestController
-@RequestMapping("/producto")
+@RequestMapping("/productos")
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 public class ProductoController {
 	
 	@Autowired

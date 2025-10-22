@@ -1,236 +1,197 @@
-// Estado global del carrito
-let cartItems = [];
+// =============================
+// 🧩 DASHBOARD.JS SIN CONFIG.JS
+// =============================
 
-// Cargar los productos al iniciar la página
-document.addEventListener('DOMContentLoaded', async () => {
-    await validateSession();
-    await loadCategories();
-    await loadProducts();
-});
+// Cambia esta constante según tu backend
+const API_BASE_URL = "http://localhost:8080"; // <-- Ajusta tu puerto/ruta si es necesario
 
-// Validar sesión del usuario
+// -----------------------------
+// 🔐 VALIDACIÓN DE SESIÓN JWT
+// -----------------------------
 async function validateSession() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token'); // ✅ corregido: antes era 'jwt'
+
     if (!token) {
-        window.location.href = '../../index.html';
+        console.warn('No hay token, redirigiendo a index...');
+        window.location.href = '/index.html';
         return;
     }
 
     try {
-        const response = await fetch('http://localhost:8080/auth/user-info', {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': '*/*'
-            }
+        const response = await fetch(`${API_BASE_URL}/auth/user-info`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!response.ok) throw new Error('Error de autenticación');
-
-        const userData = await response.json();
-        document.getElementById('username-display').textContent = userData.username;
-        
-        // Mostrar panel de admin si corresponde
-        if (userData.roles.includes('ADMIN')) {
-            document.getElementById('admin-panel').style.display = 'block';
+        if (!response.ok) {
+            console.warn('Token inválido o expirado, cerrando sesión...');
+            localStorage.removeItem('token');
+            window.location.href = '/index.html';
+        } else {
+            const userData = await response.json();
+            const usernameDisplay = document.getElementById('username-display');
+            if (usernameDisplay) {
+                usernameDisplay.textContent = userData.username;
+            }
         }
-
     } catch (error) {
-        console.error('Error:', error);
-        window.location.href = '../../index.html';
+        console.error('Error validando token:', error);
+        window.location.href = '/index.html';
     }
 }
 
-// Cargar categorías
+// -----------------------------
+// 📦 CARGAR CATEGORÍAS
+// -----------------------------
 async function loadCategories() {
     try {
-        const response = await fetch('http://localhost:8080/api/categorias');
+        const response = await fetch(`${API_BASE_URL}/categorias/list`);
+        if (!response.ok) throw new Error('Error cargando categorías');
+
         const categories = await response.json();
-        
+
         const categoriesMenu = document.getElementById('categories-menu');
         const categoryFilters = document.getElementById('category-filters');
-        
-        categories.forEach(category => {
-            // Agregar al menú de navegación
-            const menuItem = document.createElement('a');
-            menuItem.href = '#';
-            menuItem.textContent = category.nombre;
-            menuItem.onclick = () => filterByCategory(category.id);
-            categoriesMenu.appendChild(menuItem);
 
-            // Agregar a los filtros
-            const filterItem = document.createElement('div');
-            filterItem.className = 'filter-item';
-            filterItem.innerHTML = `
-                <input type="checkbox" id="cat-${category.id}" value="${category.id}">
-                <label for="cat-${category.id}">${category.nombre}</label>
+        if (categoriesMenu && categoryFilters) {
+            categoriesMenu.innerHTML = '';
+            categoryFilters.innerHTML = `
+                <button class="filter-btn active" data-category="all">Todos</button>
             `;
-            categoryFilters.appendChild(filterItem);
-        });
-    } catch (error) {
-        console.error('Error al cargar categorías:', error);
-    }
-}
 
-// Cargar productos
-async function loadProducts(filters = {}) {
-    try {
-        let url = 'http://localhost:8080/api/productos';
-        const queryParams = new URLSearchParams(filters).toString();
-        if (queryParams) {
-            url += `?${queryParams}`;
+            categories.forEach(cat => {
+                const button = document.createElement('button');
+                button.classList.add('filter-btn');
+                button.textContent = cat.nombre;
+                button.dataset.category = cat.nombre;
+
+                categoryFilters.appendChild(button);
+
+                const li = document.createElement('li');
+                li.textContent = cat.nombre;
+                categoriesMenu.appendChild(li);
+            });
+
+            setupCategoryFilters();
         }
+    } catch (error) {
+        console.error('Error cargando categorías:', error);
+    }
+}
 
-        const response = await fetch(url);
+// -----------------------------
+// 🧱 CARGAR PRODUCTOS
+// -----------------------------
+async function loadProducts(category = 'all') {
+    try {
+        const response = await fetch(`${API_BASE_URL}/productos/list`);
+        if (!response.ok) throw new Error('Error cargando productos');
+
         const products = await response.json();
-        
-        const container = document.getElementById('products-container');
-        container.innerHTML = '';
-        
-        products.forEach(product => {
-            const productCard = createProductCard(product);
-            container.appendChild(productCard);
-        });
-    } catch (error) {
-        console.error('Error al cargar productos:', error);
-    }
-}
+        const productsContainer = document.getElementById('products-container');
+        if (!productsContainer) return;
 
-// Crear tarjeta de producto
-function createProductCard(product) {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.innerHTML = `
-        <img src="${product.imagen}" alt="${product.nombre}">
-        <div class="product-info">
-            <h3>${product.nombre}</h3>
-            <p class="price">$${product.precio.toLocaleString()}</p>
-            <button onclick="addToCart(${product.id})">
-                <i class="fas fa-cart-plus"></i> Agregar al Carrito
-            </button>
-            <button onclick="showProductDetails(${product.id})" class="details-button">
-                <i class="fas fa-info-circle"></i> Detalles
-            </button>
-        </div>
-    `;
-    return card;
-}
+        productsContainer.innerHTML = '';
 
-// Agregar al carrito
-async function addToCart(productId) {
-    const token = localStorage.getItem('token');
-    try {
-        const response = await fetch('http://localhost:8080/api/carrito/agregar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                productoId: productId,
-                cantidad: 1
-            })
+        const filtered = category === 'all'
+            ? products
+            : products.filter(p => p.categoria && p.categoria.nombre === category);
+
+        filtered.forEach(product => {
+            const card = document.createElement('div');
+            card.classList.add('product-card');
+
+            card.innerHTML = `
+                <img src="${product.imagen || '/static/default.png'}" alt="${product.nombre}">
+                <h3>${product.nombre}</h3>
+                <p>${product.categoria ? product.categoria.nombre : 'Sin categoría'}</p>
+                <p class="price">$${product.precio}</p>
+            `;
+
+            card.onclick = () => showProductDetails(product);
+            productsContainer.appendChild(card);
         });
 
-        if (!response.ok) throw new Error('Error al agregar al carrito');
-
-        updateCartCount();
-        alert('Producto agregado al carrito');
     } catch (error) {
-        console.error('Error:', error);
-        alert('Error al agregar el producto al carrito');
+        console.error('Error cargando productos:', error);
     }
 }
 
-// Actualizar contador del carrito
-async function updateCartCount() {
-    const token = localStorage.getItem('token');
-    try {
-        const response = await fetch('http://localhost:8080/api/carrito/cantidad', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (!response.ok) throw new Error('Error al obtener cantidad del carrito');
-
-        const { cantidad } = await response.json();
-        document.getElementById('cart-count').textContent = cantidad;
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-// Mostrar detalles del producto
-async function showProductDetails(productId) {
-    try {
-        const response = await fetch(`http://localhost:8080/api/productos/${productId}`);
-        const product = await response.json();
-
-        const modal = document.getElementById('product-modal');
-        const details = document.getElementById('product-details');
-        
-        details.innerHTML = `
-            <div class="product-detail-content">
-                <img src="${product.imagen}" alt="${product.nombre}">
-                <div class="detail-info">
-                    <h2>${product.nombre}</h2>
-                    <p class="price">$${product.precio.toLocaleString()}</p>
-                    <p class="description">${product.descripcion}</p>
-                    <p class="stock">Stock disponible: ${product.stock}</p>
-                    <button onclick="addToCart(${product.id})">
-                        <i class="fas fa-cart-plus"></i> Agregar al Carrito
-                    </button>
-                </div>
-            </div>
-        `;
-
-        modal.style.display = 'block';
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error al cargar los detalles del producto');
-    }
-}
-
-// Filtrar por categoría
-function filterByCategory(categoryId) {
-    loadProducts({ categoria: categoryId });
-}
-
-// Aplicar filtro de precio
-function applyPriceFilter() {
-    const minPrice = document.getElementById('min-price').value;
-    const maxPrice = document.getElementById('max-price').value;
-    
-    const filters = {};
-    if (minPrice) filters.precioMin = minPrice;
-    if (maxPrice) filters.precioMax = maxPrice;
-    
-    loadProducts(filters);
-}
-
-// Buscar productos
-function searchProducts() {
-    const searchTerm = document.getElementById('search-input').value;
-    if (searchTerm) {
-        loadProducts({ busqueda: searchTerm });
-    }
-}
-
-// Cerrar modal
-document.querySelector('.close').onclick = function() {
-    document.getElementById('product-modal').style.display = 'none';
-}
-
-window.onclick = function(event) {
+// -----------------------------
+// 🧾 DETALLES DEL PRODUCTO
+// -----------------------------
+function showProductDetails(product) {
     const modal = document.getElementById('product-modal');
-    if (event.target == modal) {
-        modal.style.display = 'none';
+    const details = document.getElementById('product-details');
+    if (!modal || !details) return;
+
+    details.innerHTML = `
+        <img src="${product.imagen || '/static/default.png'}" alt="${product.nombre}">
+        <h2>${product.nombre}</h2>
+        <p><strong>Categoría:</strong> ${product.categoria ? product.categoria.nombre : 'Sin categoría'}</p>
+        <p><strong>Descripción:</strong> ${product.descripcion || 'Sin descripción'}</p>
+        <p><strong>Precio:</strong> $${product.precio}</p>
+    `;
+
+    modal.style.display = 'block';
+}
+
+// -----------------------------
+// 🔘 FILTROS POR CATEGORÍA
+// -----------------------------
+function setupCategoryFilters() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.onclick = async () => {
+            document.querySelector('.filter-btn.active')?.classList.remove('active');
+            button.classList.add('active');
+            await loadProducts(button.dataset.category);
+        };
+    });
+}
+
+// -----------------------------
+// 🚪 CERRAR SESIÓN
+// -----------------------------
+function setupLogout() {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.onclick = () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('currentUser');
+            window.location.href = '/index.html';
+        };
     }
 }
 
-// Cerrar sesión
-function logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
-    window.location.href = '../../index.html';
-}
+// -----------------------------
+// 📦 INICIALIZACIÓN PRINCIPAL
+// -----------------------------
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('📦 Dashboard inicializando...');
+
+    await validateSession();
+    await loadCategories();
+    await loadProducts();
+    setupLogout();
+
+    // ✅ Manejadores de modal
+    const closeBtn = document.querySelector('.close');
+    const modal = document.getElementById('product-modal');
+
+    if (closeBtn) {
+        closeBtn.onclick = function () {
+            if (modal) modal.style.display = 'none';
+        };
+    }
+
+    if (modal) {
+        window.onclick = function (event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+    }
+
+    console.log('✅ Dashboard listo');
+});

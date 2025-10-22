@@ -10,7 +10,8 @@ import backend.application.model.Categoria;
 import backend.application.service.CategoriaService;
 
 @RestController
-@RequestMapping("/categoria")
+@RequestMapping("/categorias")
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 public class CategoriaController {
 	
 	@Autowired

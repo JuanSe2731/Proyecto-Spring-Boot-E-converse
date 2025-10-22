@@ -36,7 +36,7 @@ async function handleLogin(event) {
             
             // Esperar 1 segundo antes de redirigir
             setTimeout(() => {
-                window.location.replace('/frontend/views/client/dashboard.html');
+                window.location.replace('/views/client/dashboard.html');
             }, 1000);
         } else {
             // Mostrar mensaje de error
