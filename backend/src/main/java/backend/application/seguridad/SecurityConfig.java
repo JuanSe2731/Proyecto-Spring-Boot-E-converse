@@ -41,6 +41,7 @@ public class SecurityConfig {
                         "/swagger-ui.html",
                         "/webjars/**",
                         "/list/**",
+                        "pedido/list/**",
                         "/auth/**",
                         "/login.html",
                         "/register.html",

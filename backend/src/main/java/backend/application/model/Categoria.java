@@ -3,6 +3,8 @@ package backend.application.model;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "categorias")
 public class Categoria {
@@ -18,6 +20,7 @@ public class Categoria {
     private String descripcion;
 
     // Relación bidireccional con Producto (opcional)
+    @JsonIgnore
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Producto> productos;
 
