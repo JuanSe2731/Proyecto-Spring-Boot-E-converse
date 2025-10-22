@@ -14,7 +14,7 @@ El proyecto busca integrar **backend, frontend y base de datos**, aplicando buen
   - Manejo de seguridad y autenticación.  
   - Control de roles (Administrador / Cliente).  
 
-- **Base de datos**: [PostgreSQL](https://www.postgresql.org/)  
+- **Base de datos**: [MySQL](https://www.mysql.com)  
   - Modelo relacional para gestionar usuarios, productos, pedidos y reportes.  
   - Uso de claves foráneas y relaciones N:M para carritos y pedidos.  
 
