@@ -49,11 +49,33 @@ public class SecurityConfig {
                     "/productos/**",
                     "/uploads/**",
                     "/images/**",
-                    "/public/**"
+                    "/public/**",
+                    "/",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-resources/**",
+                    "/swagger-ui.html",
+                    "/webjars/**",
+                    "/auth/**",
+                    "/index.html",
+                    "/register.html",
+                    "/dashboard.html",
+                    "/views/**",
+                    "/css/**",
+                    "/js/**",
+                    "/images/**",
+                    "/admin/**"
+                    
                 ).permitAll()
 
                 // Permitir algunos métodos GET específicos
-                .requestMatchers(HttpMethod.GET, "/productos/**", "/categorias/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/productos/**", "/categorias/**", "/carrito/**", "/usuario/**", "/pedido/**", "/auth/**" ).permitAll()
+                
+                .requestMatchers(HttpMethod.POST, "/productos/**", "/categorias/**", "/carrito/**", "/usuario/**", "/pedido/**", "/auth/**").permitAll()
+                
+                .requestMatchers(HttpMethod.PUT, "/productos/**", "/categorias/**", "/carrito/**", "/usuario/**", "/pedido/**", "/auth/**").permitAll()
+                
+                .requestMatchers(HttpMethod.DELETE, "/productos/**", "/categorias/**", "/carrito/**", "/usuario/**", "/pedido/**", "/auth/**").permitAll()
 
                 // Todo lo demás requiere autenticación
                 .anyRequest().authenticated()
