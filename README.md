@@ -538,7 +538,6 @@ Este proyecto es de carácter **académico** y está desarrollado con fines educ
 Para preguntas o sugerencias sobre el proyecto:
 
 - **GitHub**: [@JuanSe2731](https://github.com/JuanSe2731)
-- **Email**: [Tu email]
 
 ---
 
