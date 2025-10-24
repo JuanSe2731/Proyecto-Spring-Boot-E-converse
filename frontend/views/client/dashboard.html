@@ -56,17 +56,26 @@
             <!-- Filtros laterales -->
             <aside class="filters-sidebar">
                 <h2>Filtros</h2>
+                
                 <div class="price-range">
                     <h3>Rango de Precio</h3>
-                    <input type="range" min="0" max="1000" value="500" id="price-filter">
+                    <div class="price-display">
+                        <span>$<span id="current-max-price">0</span></span>
+                    </div>
+                    <input type="range" min="0" max="1000" value="1000" id="price-filter">
                     <div class="price-inputs">
-                        <input type="number" id="min-price" placeholder="Min">
-                        <input type="number" id="max-price" placeholder="Max">
+                        <input type="number" id="min-price" placeholder="Mín">
+                        <span>-</span>
+                        <input type="number" id="max-price" placeholder="Máx">
                     </div>
                 </div>
                 
                 <div class="size-filter">
-                    <h3>Tallas</h3>
+                    <h3>Tallas Disponibles</h3>
+                    <p class="filter-help">
+                        <i class="fas fa-info-circle"></i> 
+                        Busca en la descripción
+                    </p>
                     <div class="size-options">
                         <label><input type="checkbox" value="35"> 35</label>
                         <label><input type="checkbox" value="36"> 36</label>
@@ -74,8 +83,14 @@
                         <label><input type="checkbox" value="38"> 38</label>
                         <label><input type="checkbox" value="39"> 39</label>
                         <label><input type="checkbox" value="40"> 40</label>
+                        <label><input type="checkbox" value="41"> 41</label>
+                        <label><input type="checkbox" value="42"> 42</label>
                     </div>
                 </div>
+                
+                <button class="clear-filters-btn" onclick="resetFilters()">
+                    <i class="fas fa-redo"></i> Limpiar Filtros
+                </button>
             </aside>
 
             <!-- Cuadrícula de productos -->

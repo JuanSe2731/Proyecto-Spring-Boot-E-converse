@@ -108,6 +108,13 @@ async function loadCategories() {
 // 🧱 CARGAR PRODUCTOS
 // -----------------------------
 let allProducts = []; // Variable global para almacenar todos los productos
+let currentFilters = {
+    category: 'all',
+    searchTerm: '',
+    minPrice: 0,
+    maxPrice: Infinity,
+    sizes: []
+};
 
 async function loadProducts(category = 'all', searchTerm = '') {
     try {
@@ -117,54 +124,12 @@ async function loadProducts(category = 'all', searchTerm = '') {
         const products = await response.json();
         allProducts = products; // Guardar todos los productos
         
-        const productsContainer = document.getElementById('products-container');
-        if (!productsContainer) return;
-
-        productsContainer.innerHTML = '';
-
-        // Filtrar por categoría
-        let filtered = category === 'all'
-            ? products
-            : products.filter(p => p.categoria && p.categoria.nombre === category);
-
-        // Filtrar por término de búsqueda
-        if (searchTerm.trim() !== '') {
-            filtered = filtered.filter(p => 
-                p.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-
-        // Si no hay productos después del filtro, mostrar mensaje
-        if (filtered.length === 0) {
-            const categoryName = category === 'all' ? 'esta búsqueda' : `la categoría "${category}"`;
-            productsContainer.innerHTML = `
-                <div class="no-products-message">
-                    <i class="fas fa-box-open"></i>
-                    <h3>No hay productos disponibles</h3>
-                    <p>No se encontraron productos para ${categoryName}</p>
-                </div>
-            `;
-            return;
-        }
-
-        // Mostrar productos filtrados
-        filtered.forEach(product => {
-            const card = document.createElement('div');
-            card.classList.add('product-card');
-
-            // Procesar URL de imagen
-            const imageUrl = getImageUrl(product.imagenUrl);
-
-            card.innerHTML = `
-                <img src="${imageUrl}" alt="${product.nombre}" onerror="this.src='https://via.placeholder.com/300x220/4CAF50/ffffff?text=Sin+Imagen'">
-                <h3>${product.nombre}</h3>
-                <p>${product.categoria ? product.categoria.nombre : 'Sin categoría'}</p>
-                <p class="price">$${product.precio.toLocaleString()}</p>
-            `;
-
-            card.onclick = () => showProductDetails(product);
-            productsContainer.appendChild(card);
-        });
+        // Actualizar filtros actuales
+        currentFilters.category = category;
+        currentFilters.searchTerm = searchTerm;
+        
+        // Aplicar todos los filtros
+        applyAllFilters();
 
     } catch (error) {
         console.error('Error cargando productos:', error);
@@ -179,6 +144,85 @@ async function loadProducts(category = 'all', searchTerm = '') {
             `;
         }
     }
+}
+
+// -----------------------------
+// 🔍 APLICAR TODOS LOS FILTROS
+// -----------------------------
+function applyAllFilters() {
+    const productsContainer = document.getElementById('products-container');
+    if (!productsContainer) return;
+
+    productsContainer.innerHTML = '';
+
+    // Aplicar filtros uno por uno
+    let filtered = [...allProducts];
+
+    // 1. Filtrar por categoría
+    if (currentFilters.category !== 'all') {
+        filtered = filtered.filter(p => 
+            p.categoria && p.categoria.nombre === currentFilters.category
+        );
+    }
+
+    // 2. Filtrar por término de búsqueda
+    if (currentFilters.searchTerm.trim() !== '') {
+        filtered = filtered.filter(p => 
+            p.nombre.toLowerCase().includes(currentFilters.searchTerm.toLowerCase())
+        );
+    }
+
+    // 3. Filtrar por rango de precio
+    filtered = filtered.filter(p => 
+        p.precio >= currentFilters.minPrice && p.precio <= currentFilters.maxPrice
+    );
+
+    // 4. Filtrar por tallas (buscar en descripción)
+    if (currentFilters.sizes.length > 0) {
+        filtered = filtered.filter(p => {
+            if (!p.descripcion) return false;
+            
+            // Buscar si alguna de las tallas seleccionadas aparece en la descripción
+            return currentFilters.sizes.some(size => {
+                const regex = new RegExp(`\\b${size}\\b`, 'i'); // \b para buscar palabra completa
+                return regex.test(p.descripcion);
+            });
+        });
+    }
+
+    // Si no hay productos después del filtro, mostrar mensaje
+    if (filtered.length === 0) {
+        productsContainer.innerHTML = `
+            <div class="no-products-message">
+                <i class="fas fa-box-open"></i>
+                <h3>No hay productos disponibles</h3>
+                <p>No se encontraron productos con los filtros aplicados</p>
+                <button onclick="resetFilters()" class="reset-filters-btn">
+                    <i class="fas fa-redo"></i> Limpiar Filtros
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    // Mostrar productos filtrados
+    filtered.forEach(product => {
+        const card = document.createElement('div');
+        card.classList.add('product-card');
+
+        // Procesar URL de imagen
+        const imageUrl = getImageUrl(product.imagenUrl);
+
+        card.innerHTML = `
+            <img src="${imageUrl}" alt="${product.nombre}" onerror="this.src='https://via.placeholder.com/300x220/4CAF50/ffffff?text=Sin+Imagen'">
+            <h3>${product.nombre}</h3>
+            <p>${product.categoria ? product.categoria.nombre : 'Sin categoría'}</p>
+            <p class="price">$${product.precio.toLocaleString()}</p>
+        `;
+
+        card.onclick = () => showProductDetails(product);
+        productsContainer.appendChild(card);
+    });
 }
 // -----------------------------
 // 🖼️ OBTENER URL DE IMAGEN
@@ -612,6 +656,154 @@ function proceedToCheckout() {
     showNotification('Esta funcionalidad aún no está implementada', 'info');
 }
 
+// -----------------------------
+// 🔧 CONFIGURAR FILTRO DE PRECIO
+// -----------------------------
+function setupPriceFilter() {
+    const priceSlider = document.getElementById('price-filter');
+    const minPriceInput = document.getElementById('min-price');
+    const maxPriceInput = document.getElementById('max-price');
+    const currentMaxPriceDisplay = document.getElementById('current-max-price');
+
+    if (!priceSlider || !minPriceInput || !maxPriceInput) return;
+
+    // Calcular el precio máximo de los productos
+    const maxProductPrice = allProducts.length > 0 
+        ? Math.max(...allProducts.map(p => p.precio))
+        : 1000;
+
+    // Configurar el slider
+    priceSlider.max = maxProductPrice;
+    priceSlider.value = maxProductPrice;
+    
+    // Inicializar inputs
+    minPriceInput.value = 0;
+    maxPriceInput.value = maxProductPrice;
+    minPriceInput.placeholder = '0';
+    maxPriceInput.placeholder = maxProductPrice.toString();
+    
+    // Actualizar display visual
+    if (currentMaxPriceDisplay) {
+        currentMaxPriceDisplay.textContent = maxProductPrice.toLocaleString();
+    }
+
+    // Actualizar filtro cuando se mueve el slider
+    priceSlider.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value);
+        maxPriceInput.value = value;
+        currentFilters.maxPrice = value;
+        
+        // Actualizar display visual
+        if (currentMaxPriceDisplay) {
+            currentMaxPriceDisplay.textContent = value.toLocaleString();
+        }
+        
+        applyAllFilters();
+    });
+
+    // Actualizar filtro cuando se cambia el input mínimo
+    minPriceInput.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value) || 0;
+        currentFilters.minPrice = value;
+        applyAllFilters();
+    });
+
+    // Actualizar filtro cuando se cambia el input máximo
+    maxPriceInput.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value) || maxProductPrice;
+        currentFilters.maxPrice = value;
+        priceSlider.value = value;
+        
+        // Actualizar display visual
+        if (currentMaxPriceDisplay) {
+            currentMaxPriceDisplay.textContent = value.toLocaleString();
+        }
+        
+        applyAllFilters();
+    });
+
+    // Actualizar también el filtro de precio máximo inicial
+    currentFilters.maxPrice = maxProductPrice;
+    
+    console.log('💰 Filtro de precio configurado. Rango: $0 - $' + maxProductPrice.toLocaleString());
+}
+
+// -----------------------------
+// 👟 CONFIGURAR FILTRO DE TALLAS
+// -----------------------------
+function setupSizeFilter() {
+    const sizeCheckboxes = document.querySelectorAll('.size-options input[type="checkbox"]');
+    
+    sizeCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const size = e.target.value;
+            
+            if (e.target.checked) {
+                // Agregar talla al filtro
+                if (!currentFilters.sizes.includes(size)) {
+                    currentFilters.sizes.push(size);
+                }
+            } else {
+                // Remover talla del filtro
+                currentFilters.sizes = currentFilters.sizes.filter(s => s !== size);
+            }
+            
+            console.log('🔍 Tallas seleccionadas:', currentFilters.sizes);
+            applyAllFilters();
+        });
+    });
+}
+
+// -----------------------------
+// 🔄 RESETEAR FILTROS
+// -----------------------------
+function resetFilters() {
+    // Resetear objeto de filtros
+    currentFilters = {
+        category: 'all',
+        searchTerm: '',
+        minPrice: 0,
+        maxPrice: Infinity,
+        sizes: []
+    };
+
+    // Resetear UI de precio
+    const priceSlider = document.getElementById('price-filter');
+    const minPriceInput = document.getElementById('min-price');
+    const maxPriceInput = document.getElementById('max-price');
+    
+    if (priceSlider && minPriceInput && maxPriceInput) {
+        const maxPrice = allProducts.length > 0 
+            ? Math.max(...allProducts.map(p => p.precio))
+            : 1000;
+        
+        priceSlider.value = maxPrice;
+        minPriceInput.value = '';
+        maxPriceInput.value = '';
+        currentFilters.maxPrice = maxPrice;
+    }
+
+    // Resetear checkboxes de tallas
+    const sizeCheckboxes = document.querySelectorAll('.size-options input[type="checkbox"]');
+    sizeCheckboxes.forEach(cb => cb.checked = false);
+
+    // Resetear búsqueda
+    const searchInput = document.querySelector('.search-bar input');
+    if (searchInput) searchInput.value = '';
+
+    // Resetear categoría activa
+    const activeFilter = document.querySelector('.filter-btn.active');
+    if (activeFilter) activeFilter.classList.remove('active');
+    
+    const allFilterBtn = document.querySelector('.filter-btn[data-category="all"]');
+    if (allFilterBtn) allFilterBtn.classList.add('active');
+
+    // Aplicar filtros (mostrar todos)
+    applyAllFilters();
+    
+    showNotification('Filtros limpiados', 'success');
+}
+
 
 // -----------------------------
 // 📦 INICIALIZACIÓN PRINCIPAL
@@ -648,6 +840,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupSearch(); // ✅ Configurar búsqueda
     setupLogout();
     setupCart(); // ✅ Inicializar funcionalidad del carrito
+    
+    // ⚡ NUEVO: Configurar filtros de precio y tallas
+    // Esperar a que los productos se carguen antes de configurar el filtro de precio
+    setTimeout(() => {
+        setupPriceFilter();
+        setupSizeFilter();
+        console.log('✅ Filtros de precio y tallas configurados');
+    }, 500);
 
     // ✅ Manejadores de modal
     const closeBtn = document.querySelector('.close');
