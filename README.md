@@ -501,17 +501,19 @@ INSERT INTO categoria (nombre) VALUES
 ## 👥 Equipo de Desarrollo
 
 **Desarrolladores:**
-- Juan Sebastián - Backend & Frontend
-- [Otros colaboradores]
+- Juan Sebastián Otero  - 2220053
+- Daniel Santiago Convers  - 2221120
+- Juan David Paipa  - 2220062
+- Jhon Anderson Vargas  - 2220086
 
 **Institución:**
-- [Nombre de la universidad/institución]
+- Universidad Industrial de Santander
 
 **Curso:**
-- [Nombre del curso]
+- Entornos de Programacion C1
 
 **Período:**
-- 2024-2025
+- 2025
 
 ---
 
