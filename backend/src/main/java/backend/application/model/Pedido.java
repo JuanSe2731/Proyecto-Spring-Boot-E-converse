@@ -1,8 +1,10 @@
 package backend.application.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "pedido")
@@ -18,6 +20,10 @@ public class Pedido {
 
     @Column(name = "fecha_pedido", nullable = false)
     private LocalDateTime fechaPedido;
+    
+    @JsonIgnore  // Evita serialización circular
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PedidoDetalle> detalles;
 
     @Column(name = "total", nullable = false, precision = 10, scale = 2)
     private BigDecimal total;
@@ -49,4 +55,7 @@ public class Pedido {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    public List<PedidoDetalle> getDetalles() { return detalles; }
+    public void setDetalles(List<PedidoDetalle> detalles) { this.detalles = detalles; }
 }

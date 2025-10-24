@@ -5,7 +5,6 @@ async function handleRegister(event) {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
-    const userType = document.getElementById('userType').value;
     const errorMessage = document.getElementById('error-message');
     const submitButton = document.querySelector('button[type="submit"]');
 
@@ -48,8 +47,7 @@ async function handleRegister(event) {
             body: JSON.stringify({
                 username: username,
                 email: email,
-                password: password,
-                rol: parseInt(userType) // Asegurar que sea un número
+                password: password
             })
         });
 
@@ -57,7 +55,7 @@ async function handleRegister(event) {
 
         if (response.ok) {
             // Mostrar mensaje de éxito
-            errorMessage.textContent = '¡Registro exitoso!';
+            errorMessage.textContent = '¡Registro exitoso! Redirigiendo...';
             errorMessage.style.color = '#4CAF50';
             errorMessage.classList.add('show');
             
@@ -76,17 +74,18 @@ async function handleRegister(event) {
                     errorMessage.textContent = data.message || 'Error en el registro. Por favor, verifica los datos.';
                 }
             } else {
-                errorMessage.textContent = 'Error en el servidor. Por favor, intenta más tarde.';
+                errorMessage.textContent = data.message || 'Error en el servidor. Por favor, intenta más tarde.';
             }
             errorMessage.classList.add('show');
         }
     } catch (error) {
         console.error('Error:', error);
         errorMessage.textContent = 'Error de conexión con el servidor';
+        errorMessage.style.color = '#f44336';
         errorMessage.classList.add('show');
     } finally {
         submitButton.disabled = false;
-        submitButton.textContent = 'Registrar';
+        submitButton.textContent = 'Registrarse';
     }
 }
 

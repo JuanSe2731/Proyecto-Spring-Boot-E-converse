@@ -41,6 +41,9 @@ async function handleLogin(event) {
                 if (userInfoResponse.ok) {
                     const userInfo = await userInfoResponse.json();
                     
+                    // Guardar los datos del usuario incluyendo el rol en localStorage
+                    localStorage.setItem('userData', JSON.stringify(userInfo));
+                    
                     // Mostrar mensaje de éxito
                     errorMessage.textContent = '¡Inicio de sesión exitoso!';
                     errorMessage.style.color = '#4CAF50';

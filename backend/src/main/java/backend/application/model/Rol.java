@@ -22,8 +22,9 @@ public class Rol {
     
     @Column(nullable = false, unique = true, length= 50)
     private String nombre;
+    
     @JsonIgnore
-    @OneToMany(mappedBy = "rol", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "rol", fetch = FetchType.LAZY)
     private List<Usuario> usuarios;
 
     // Constructor vacío (obligatorio para JPA)

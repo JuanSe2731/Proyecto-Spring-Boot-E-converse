@@ -35,10 +35,33 @@ public class UsuarioService implements IUsuarioService{
 
 	@Override
 	public Usuario buscarUsuario(Long id) {
-		Usuario usuario = null;
-		usuario = usuarioRepository.findById(id).orElse(null);
-		if (usuario == null) {
-			return null;
+		System.out.println("🔍 Buscando usuario con ID: " + id + " (tipo: " + id.getClass().getName() + ")");
+		
+		// Intentar buscar en la lista primero
+		List<Usuario> todos = usuarioRepository.findAll();
+		System.out.println("📊 Total usuarios en BD: " + todos.size());
+		
+		Usuario usuarioEnLista = null;
+		for (Usuario u : todos) {
+			if (u.getIdUsuario().equals(id)) {
+				usuarioEnLista = u;
+				System.out.println("✅ Usuario encontrado en la lista: " + u.getNombre());
+				break;
+			}
+		}
+		
+		// Buscar con findById
+		Usuario usuario = usuarioRepository.findById(id).orElse(null);
+		System.out.println("🔎 Resultado findById: " + (usuario != null ? "ENCONTRADO" : "NO ENCONTRADO"));
+		
+		// Si está en la lista pero findById no lo encuentra, usar el de la lista
+		if (usuario == null && usuarioEnLista != null) {
+			System.out.println("⚠️ PROBLEMA: Usuario está en lista pero findById no lo encuentra. Usando el de la lista.");
+			return usuarioEnLista;
+		}
+		
+		if (usuario != null) {
+			System.out.println("   - Nombre: " + usuario.getNombre() + " | Correo: " + usuario.getCorreo());
 		}
 		return usuario;
 	}
@@ -47,5 +70,11 @@ public class UsuarioService implements IUsuarioService{
 	public int borrarUsuario(Long id) {
 		usuarioRepository.deleteById(id);
 		return 1;
+	}
+	
+	@Override
+	public Usuario actualizarUsuario(Usuario usuario) {
+		// Guardar sin re-encriptar la contraseña
+		return usuarioRepository.save(usuario);
 	}
 }

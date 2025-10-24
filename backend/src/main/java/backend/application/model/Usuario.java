@@ -1,6 +1,8 @@
 package backend.application.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity  // Marca esta clase como una Entidad de BD
 @Table(name = "usuarios")  // Indica la tabla a la que se mapeará
@@ -15,6 +17,14 @@ public class Usuario {
     @JoinColumn(name = "id_rol", nullable = false)  
     // Crea la FK "id_rol" hacia la tabla Rol
     private Rol rol;
+    
+    @JsonIgnore  // Evita serialización circular
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Carrito carrito;
+    
+    @JsonIgnore  // Evita serialización circular
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Pedido> pedidos;
 
     @Column(nullable = false, length = 100)  
     private String nombre;
@@ -66,4 +76,10 @@ public class Usuario {
 
     public Boolean getEstado() { return estado; }
     public void setEstado(Boolean estado) { this.estado = estado; }
+
+    public Carrito getCarrito() { return carrito; }
+    public void setCarrito(Carrito carrito) { this.carrito = carrito; }
+
+    public List<Pedido> getPedidos() { return pedidos; }
+    public void setPedidos(List<Pedido> pedidos) { this.pedidos = pedidos; }
 }

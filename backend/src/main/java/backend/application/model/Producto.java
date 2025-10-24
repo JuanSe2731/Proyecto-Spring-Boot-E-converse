@@ -1,7 +1,9 @@
 package backend.application.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "producto")
@@ -14,6 +16,14 @@ public class Producto {
     @ManyToOne
     @JoinColumn(name = "id_categoria", nullable = false)
     private Categoria categoria;
+    
+    @JsonIgnore
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CarritoDetalle> carritoDetalles;
+    
+    @JsonIgnore
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PedidoDetalle> pedidoDetalles;
 
     @Column(nullable = false, length = 150)
     private String nombre;
@@ -66,4 +76,10 @@ public class Producto {
 
     public String getImagenUrl() { return imagenUrl; }
     public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
+
+    public List<CarritoDetalle> getCarritoDetalles() { return carritoDetalles; }
+    public void setCarritoDetalles(List<CarritoDetalle> carritoDetalles) { this.carritoDetalles = carritoDetalles; }
+
+    public List<PedidoDetalle> getPedidoDetalles() { return pedidoDetalles; }
+    public void setPedidoDetalles(List<PedidoDetalle> pedidoDetalles) { this.pedidoDetalles = pedidoDetalles; }
 }

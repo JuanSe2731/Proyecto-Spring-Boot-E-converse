@@ -13,5 +13,7 @@ public interface IUsuarioService {
 	Usuario buscarUsuario(Long id);
 	
 	int borrarUsuario(Long id);
+	
+	Usuario actualizarUsuario(Usuario usuario);
 
 }

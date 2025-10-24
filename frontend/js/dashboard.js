@@ -29,6 +29,10 @@ async function validateSession() {
             window.location.href = '/index.html';
         } else {
             const userData = await response.json();
+            
+            // Guardar los datos del usuario en localStorage para que otros módulos puedan accederlos
+            localStorage.setItem('userData', JSON.stringify(userData));
+            
             const usernameDisplay = document.getElementById('username-display');
             if (usernameDisplay) {
                 usernameDisplay.textContent = userData.username;

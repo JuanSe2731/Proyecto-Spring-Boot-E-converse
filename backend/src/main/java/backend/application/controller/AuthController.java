@@ -8,10 +8,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import backend.application.model.Rol;
 import backend.application.model.Usuario;
+import backend.application.repository.RolRepository;
 import backend.application.repository.UsuarioRepository;
 import backend.application.seguridad.CustomUserDetailsService;
 import backend.application.seguridad.JwtTokenUtil;
+import backend.application.service.UsuarioService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +35,12 @@ public class AuthController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private UsuarioService usuarioService;
+
+    @Autowired
+    private RolRepository rolRepository;
 
     /**
      * Endpoint para obtener información del usuario autenticado.
@@ -80,6 +89,64 @@ public class AuthController {
             
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Error al obtener información del usuario"));
+        }
+    }
+
+    /**
+     * Endpoint para registro de nuevos usuarios.
+     * Crea un nuevo usuario con rol de Cliente por defecto.
+     */
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody Map<String, String> request) {
+        try {
+            String username = request.get("username");
+            String email = request.get("email");
+            String password = request.get("password");
+
+            // Validaciones básicas
+            if (username == null || username.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "El nombre de usuario es requerido"));
+            }
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "El correo electrónico es requerido"));
+            }
+            if (password == null || password.length() < 6) {
+                return ResponseEntity.badRequest().body(Map.of("message", "La contraseña debe tener al menos 6 caracteres"));
+            }
+
+            // Verificar si el correo ya existe
+            if (usuarioRepository.findByCorreo(email).isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "El correo electrónico ya está registrado"));
+            }
+
+            // Obtener el rol de Cliente (id_rol = 2 según la imagen que proporcionaste)
+            Rol rolCliente = rolRepository.findById(2L).orElse(null);
+            if (rolCliente == null) {
+                return ResponseEntity.status(500).body(Map.of("message", "Error: Rol de Cliente no encontrado en la base de datos"));
+            }
+
+            // Crear el nuevo usuario
+            Usuario nuevoUsuario = new Usuario();
+            nuevoUsuario.setNombre(username);
+            nuevoUsuario.setCorreo(email);
+            nuevoUsuario.setContrasena(password); // El servicio la encriptará
+            nuevoUsuario.setRol(rolCliente);
+            nuevoUsuario.setDireccion(""); // Dirección vacía por defecto
+            nuevoUsuario.setEstado(true); // Usuario activo por defecto
+
+            // Guardar el usuario (la contraseña se encripta en el servicio)
+            Usuario usuarioGuardado = usuarioService.nuevoUsuario(nuevoUsuario);
+
+            // Respuesta exitosa
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Usuario registrado exitosamente");
+            response.put("usuario", usuarioGuardado.getCorreo());
+            
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("message", "Error en el servidor al registrar usuario", "error", e.getMessage()));
         }
     }
 

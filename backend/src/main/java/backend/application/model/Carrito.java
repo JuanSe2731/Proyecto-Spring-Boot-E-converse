@@ -1,6 +1,8 @@
 package backend.application.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -17,6 +19,10 @@ public class Carrito {
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
+    
+    @JsonIgnore  // Evita serialización circular
+    @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CarritoDetalle> detalles;
 
     public Carrito() {}
 
@@ -48,5 +54,13 @@ public class Carrito {
 
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+
+    public List<CarritoDetalle> getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(List<CarritoDetalle> detalles) {
+        this.detalles = detalles;
     }
 }
