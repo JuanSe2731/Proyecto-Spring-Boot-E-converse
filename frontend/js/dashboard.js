@@ -34,12 +34,25 @@ async function validateSession() {
                 usernameDisplay.textContent = userData.username;
             }
             
+            console.log('🔍 Datos del usuario:', userData);
+            console.log('🔍 Rol:', userData.rol);
+            
+            // Verificar si el usuario tiene rol Administrador
+            const isAdmin = userData.rol && userData.rol.nombre === 'Administrador';
+            
+            console.log('🔍 ¿Es admin?', isAdmin);
+            
             // Mostrar botón de administración si el usuario es ADMIN
-            if (userData.rol && userData.rol.nombre === 'ADMIN') {
+            if (isAdmin) {
                 const adminBtn = document.getElementById('admin-btn');
                 if (adminBtn) {
-                    adminBtn.style.display = 'block';
+                    adminBtn.style.display = 'flex'; // Cambio de 'block' a 'flex' para mejor alineación
+                    console.log('✅ Usuario ADMIN detectado - Botón de admin visible');
+                } else {
+                    console.warn('⚠️ Botón de admin no encontrado en el DOM');
                 }
+            } else {
+                console.log('ℹ️ Usuario CLIENTE - Sin acceso a panel de admin');
             }
         }
     } catch (error) {
@@ -90,21 +103,47 @@ async function loadCategories() {
 // -----------------------------
 // 🧱 CARGAR PRODUCTOS
 // -----------------------------
-async function loadProducts(category = 'all') {
+let allProducts = []; // Variable global para almacenar todos los productos
+
+async function loadProducts(category = 'all', searchTerm = '') {
     try {
         const response = await fetch(`${API_BASE_URL}/productos/list`);
         if (!response.ok) throw new Error('Error cargando productos');
 
         const products = await response.json();
+        allProducts = products; // Guardar todos los productos
+        
         const productsContainer = document.getElementById('products-container');
         if (!productsContainer) return;
 
         productsContainer.innerHTML = '';
 
-        const filtered = category === 'all'
+        // Filtrar por categoría
+        let filtered = category === 'all'
             ? products
             : products.filter(p => p.categoria && p.categoria.nombre === category);
 
+        // Filtrar por término de búsqueda
+        if (searchTerm.trim() !== '') {
+            filtered = filtered.filter(p => 
+                p.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        // Si no hay productos después del filtro, mostrar mensaje
+        if (filtered.length === 0) {
+            const categoryName = category === 'all' ? 'esta búsqueda' : `la categoría "${category}"`;
+            productsContainer.innerHTML = `
+                <div class="no-products-message">
+                    <i class="fas fa-box-open"></i>
+                    <h3>No hay productos disponibles</h3>
+                    <p>No se encontraron productos para ${categoryName}</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Mostrar productos filtrados
         filtered.forEach(product => {
             const card = document.createElement('div');
             card.classList.add('product-card');
@@ -125,9 +164,18 @@ async function loadProducts(category = 'all') {
 
     } catch (error) {
         console.error('Error cargando productos:', error);
+        const productsContainer = document.getElementById('products-container');
+        if (productsContainer) {
+            productsContainer.innerHTML = `
+                <div class="no-products-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Error al cargar productos</h3>
+                    <p>Por favor, intenta nuevamente más tarde</p>
+                </div>
+            `;
+        }
     }
 }
-
 // -----------------------------
 // 🖼️ OBTENER URL DE IMAGEN
 // -----------------------------
@@ -167,7 +215,7 @@ function showProductDetails(product) {
         <p><strong>Categoría:</strong> ${product.categoria ? product.categoria.nombre : 'Sin categoría'}</p>
         <p><strong>Descripción:</strong> ${product.descripcion || 'Sin descripción'}</p>
         <p class="price">$${product.precio.toLocaleString()}</p>
-        <button class="add-to-cart" onclick="addToCart(${product.id})">
+        <button class="add-to-cart" onclick="addToCart(${product.idProducto})">
             <i class="fas fa-shopping-cart"></i> Agregar al Carrito
         </button>
     `;
@@ -249,10 +297,78 @@ function setupCategoryFilters() {
         button.onclick = async () => {
             document.querySelector('.filter-btn.active')?.classList.remove('active');
             button.classList.add('active');
-            await loadProducts(button.dataset.category);
+            
+            const category = button.dataset.category;
+            const searchInput = document.querySelector('.search-bar input');
+            const searchTerm = searchInput ? searchInput.value : '';
+            
+            await loadProducts(category, searchTerm);
         };
     });
 }
+
+// -----------------------------
+// 🔘 CONFIGURAR BOTONES DEL NAVBAR
+// -----------------------------
+function setupNavbarCategories() {
+    const navButtons = document.querySelectorAll('.category-button');
+    navButtons.forEach(button => {
+        button.onclick = async () => {
+            // Remover active de todos los botones del navbar
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Remover active de los filtros de la sidebar también
+            document.querySelector('.filter-btn.active')?.classList.remove('active');
+            
+            const category = button.textContent.trim();
+            const searchInput = document.querySelector('.search-bar input');
+            const searchTerm = searchInput ? searchInput.value : '';
+            
+            // Limpiar búsqueda si existe
+            if (searchInput) searchInput.value = '';
+            
+            await loadProducts(category, '');
+        };
+    });
+}
+
+// -----------------------------
+// 🔍 CONFIGURAR BÚSQUEDA
+// -----------------------------
+function setupSearch() {
+    const searchInput = document.querySelector('.search-bar input');
+    const searchButton = document.querySelector('.search-button');
+    
+    if (!searchInput || !searchButton) return;
+    
+    // Función para ejecutar la búsqueda
+    const performSearch = () => {
+        const searchTerm = searchInput.value.trim();
+        const activeFilter = document.querySelector('.filter-btn.active');
+        const category = activeFilter ? activeFilter.dataset.category : 'all';
+        
+        loadProducts(category, searchTerm);
+    };
+    
+    // Búsqueda al hacer clic en el botón
+    searchButton.onclick = performSearch;
+    
+    // Búsqueda al presionar Enter
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+    
+    // Búsqueda en tiempo real (opcional, mientras escribes)
+    searchInput.addEventListener('input', () => {
+        const activeFilter = document.querySelector('.filter-btn.active');
+        const category = activeFilter ? activeFilter.dataset.category : 'all';
+        loadProducts(category, searchInput.value.trim());
+    });
+}
+
 
 // -----------------------------
 // 🚪 CERRAR SESIÓN
@@ -489,7 +605,7 @@ async function removeFromCart(itemId) {
 // 💳 PROCEDER AL PAGO
 // -----------------------------
 function proceedToCheckout() {
-    window.location.href = '/views/client/cart.html';
+    showNotification('Esta funcionalidad aún no está implementada', 'info');
 }
 
 
@@ -524,6 +640,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     await validateSession();
     await loadCategories();
     await loadProducts();
+    setupNavbarCategories(); // ✅ Configurar botones del navbar
+    setupSearch(); // ✅ Configurar búsqueda
     setupLogout();
     setupCart(); // ✅ Inicializar funcionalidad del carrito
 

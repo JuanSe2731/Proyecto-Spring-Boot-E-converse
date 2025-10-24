@@ -260,6 +260,13 @@ button:hover {
     transform: translateY(-2px);
 }
 
+.category-button.active {
+    background: white;
+    color: #4CAF50;
+    border-color: white;
+    font-weight: 600;
+}
+
 .nav-actions {
     display: flex;
     align-items: center;
@@ -433,11 +440,13 @@ button:hover {
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
     gap: 2rem;
     flex: 1;
     width: 100%;
     max-width: 100%;
+    justify-content: start;
+    align-content: start;
 }
 
 /* Responsivo: ajustar grid según el tamaño de pantalla */
@@ -494,7 +503,8 @@ button:hover {
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    min-height: 380px;
+    max-height: 380px;
 }
 
 .product-card:hover {
@@ -546,6 +556,34 @@ button:hover {
 
 .add-to-cart:hover {
     background: #45a049;
+}
+
+/* Mensaje cuando no hay productos */
+.no-products-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.no-products-message i {
+    font-size: 4rem;
+    color: #4CAF50;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.no-products-message h3 {
+    color: #333;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.no-products-message p {
+    color: #666;
+    font-size: 1rem;
 }
 
 .notification {

@@ -8,6 +8,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import backend.application.model.Usuario;
+import backend.application.repository.UsuarioRepository;
 import backend.application.seguridad.CustomUserDetailsService;
 import backend.application.seguridad.JwtTokenUtil;
 
@@ -27,6 +29,9 @@ public class AuthController {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     /**
      * Endpoint para obtener información del usuario autenticado.
@@ -52,11 +57,24 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Token inválido"));
             }
 
-            // Crear respuesta con información del usuario
+            // Obtener el usuario completo de la base de datos para acceder al rol
+            Usuario usuario = usuarioRepository.findByCorreo(username).orElse(null);
+            if (usuario == null) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Usuario no encontrado"));
+            }
+
+            // Crear respuesta con información del usuario incluyendo el rol completo
             Map<String, Object> userInfo = new HashMap<>();
             userInfo.put("username", userDetails.getUsername());
-            userInfo.put("roles", userDetails.getAuthorities());
             userInfo.put("isEnabled", userDetails.isEnabled());
+            
+            // Incluir el objeto Rol completo
+            if (usuario.getRol() != null) {
+                Map<String, Object> rolInfo = new HashMap<>();
+                rolInfo.put("idRol", usuario.getRol().getIdRol());
+                rolInfo.put("nombre", usuario.getRol().getNombre());
+                userInfo.put("rol", rolInfo);
+            }
 
             return ResponseEntity.ok(userInfo);
             

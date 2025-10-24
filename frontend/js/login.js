@@ -29,15 +29,45 @@ async function handleLogin(event) {
             // Configurar el token para futuras peticiones
             setupAuthToken(data.token);
             
-            // Mostrar mensaje de éxito
-            errorMessage.textContent = '¡Inicio de sesión exitoso!';
-            errorMessage.style.color = '#4CAF50';
-            errorMessage.style.display = 'block';
-            
-            // Esperar 1 segundo antes de redirigir
-            setTimeout(() => {
-                window.location.replace('/views/client/dashboard.html');
-            }, 1000);
+            // Obtener información del usuario incluyendo el rol
+            try {
+                const userInfoResponse = await fetch('http://localhost:8080/auth/user-info', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${data.token}`
+                    }
+                });
+
+                if (userInfoResponse.ok) {
+                    const userInfo = await userInfoResponse.json();
+                    
+                    // Mostrar mensaje de éxito
+                    errorMessage.textContent = '¡Inicio de sesión exitoso!';
+                    errorMessage.style.color = '#4CAF50';
+                    errorMessage.style.display = 'block';
+                    
+                    // Redirigir según el rol
+                    setTimeout(() => {
+                        // Verificar si el usuario tiene rol Administrador
+                        const isAdmin = userInfo.rol && userInfo.rol.nombre === 'Administrador';
+                        
+                        // Tanto admin como cliente van al mismo dashboard
+                        // El admin simplemente ve el botón extra de administración
+                        window.location.replace('/views/client/dashboard.html');
+                    }, 1000);
+                } else {
+                    // Si falla obtener info del usuario, redirigir al dashboard por defecto
+                    setTimeout(() => {
+                        window.location.replace('/views/client/dashboard.html');
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('Error obteniendo info del usuario:', error);
+                // Si falla, redirigir al dashboard por defecto
+                setTimeout(() => {
+                    window.location.replace('/views/client/dashboard.html');
+                }, 1000);
+            }
         } else {
             // Mostrar mensaje de error
             errorMessage.textContent = 'Usuario o contraseña incorrectos';

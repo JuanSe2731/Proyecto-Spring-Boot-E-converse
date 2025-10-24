@@ -2,7 +2,9 @@ package backend.application.controller;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,4 +98,147 @@ public class CarritoDetalleController {
         }
     }
 
+    @GetMapping
+    public ResponseEntity<?> obtenerCarrito(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("message", "Token ausente"));
+            }
+
+            String token = authHeader.substring(7);
+            String username = jwtTokenUtil.getUsernameFromToken(token);
+            if (username == null) return ResponseEntity.badRequest().body(Map.of("message", "Token inválido"));
+
+            // Buscar usuario por correo/username
+            Usuario usuario = usuarioRepository.findByCorreo(username).orElse(null);
+            if (usuario == null) return ResponseEntity.status(404).body(Map.of("message", "Usuario no encontrado"));
+
+            // Buscar carrito del usuario
+            Carrito carrito = carritoRepository.findByUsuario(usuario).orElse(null);
+            if (carrito == null) {
+                // Si no tiene carrito, retornar carrito vacío
+                Map<String, Object> resp = new HashMap<>();
+                resp.put("items", new ArrayList<>());
+                resp.put("total", 0);
+                return ResponseEntity.ok(resp);
+            }
+
+            // Obtener detalles del carrito
+            List<CarritoDetalle> detalles = carritoDetalleRepository.findByCarrito(carrito);
+            
+            // Construir respuesta
+            List<Map<String, Object>> items = new ArrayList<>();
+            BigDecimal total = BigDecimal.ZERO;
+
+            for (CarritoDetalle detalle : detalles) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("id", detalle.getIdDetalle());
+                item.put("cantidad", detalle.getCantidad());
+                item.put("subtotal", detalle.getSubtotal());
+                
+                // Incluir información del producto
+                Map<String, Object> productoInfo = new HashMap<>();
+                Producto p = detalle.getProducto();
+                productoInfo.put("idProducto", p.getIdProducto());
+                productoInfo.put("nombre", p.getNombre());
+                productoInfo.put("precio", p.getPrecio());
+                productoInfo.put("imagenUrl", p.getImagenUrl());
+                
+                item.put("producto", productoInfo);
+                items.add(item);
+                
+                total = total.add(detalle.getSubtotal());
+            }
+
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("items", items);
+            resp.put("total", total);
+            return ResponseEntity.ok(resp);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("message", "Error interno", "error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/actualizar/{itemId}")
+    public ResponseEntity<?> actualizarCantidad(@RequestHeader("Authorization") String authHeader, 
+                                                 @PathVariable Long itemId, 
+                                                 @RequestBody Map<String, Integer> body) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("message", "Token ausente"));
+            }
+
+            String token = authHeader.substring(7);
+            String username = jwtTokenUtil.getUsernameFromToken(token);
+            if (username == null) return ResponseEntity.badRequest().body(Map.of("message", "Token inválido"));
+
+            // Buscar el detalle del carrito
+            CarritoDetalle detalle = carritoDetalleRepository.findById(itemId).orElse(null);
+            if (detalle == null) {
+                return ResponseEntity.status(404).body(Map.of("message", "Item no encontrado"));
+            }
+
+            // Verificar que el carrito pertenece al usuario
+            Usuario usuario = usuarioRepository.findByCorreo(username).orElse(null);
+            if (usuario == null || !detalle.getCarrito().getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
+                return ResponseEntity.status(403).body(Map.of("message", "No autorizado"));
+            }
+
+            // Actualizar cantidad
+            Integer nuevaCantidad = body.get("cantidad");
+            if (nuevaCantidad == null || nuevaCantidad < 1) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Cantidad inválida"));
+            }
+
+            detalle.setCantidad(nuevaCantidad);
+            BigDecimal nuevoSubtotal = detalle.getProducto().getPrecio().multiply(new BigDecimal(nuevaCantidad));
+            detalle.setSubtotal(nuevoSubtotal);
+            carritoDetalleRepository.save(detalle);
+
+            return ResponseEntity.ok(Map.of("message", "Cantidad actualizada", "cantidad", nuevaCantidad));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("message", "Error interno", "error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/eliminar/{itemId}")
+    public ResponseEntity<?> eliminarItem(@RequestHeader("Authorization") String authHeader, 
+                                          @PathVariable Long itemId) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("message", "Token ausente"));
+            }
+
+            String token = authHeader.substring(7);
+            String username = jwtTokenUtil.getUsernameFromToken(token);
+            if (username == null) return ResponseEntity.badRequest().body(Map.of("message", "Token inválido"));
+
+            // Buscar el detalle del carrito
+            CarritoDetalle detalle = carritoDetalleRepository.findById(itemId).orElse(null);
+            if (detalle == null) {
+                return ResponseEntity.status(404).body(Map.of("message", "Item no encontrado"));
+            }
+
+            // Verificar que el carrito pertenece al usuario
+            Usuario usuario = usuarioRepository.findByCorreo(username).orElse(null);
+            if (usuario == null || !detalle.getCarrito().getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
+                return ResponseEntity.status(403).body(Map.of("message", "No autorizado"));
+            }
+
+            // Eliminar el item
+            carritoDetalleRepository.delete(detalle);
+
+            return ResponseEntity.ok(Map.of("message", "Item eliminado"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("message", "Error interno", "error", e.getMessage()));
+        }
+    }
+
 }
+
