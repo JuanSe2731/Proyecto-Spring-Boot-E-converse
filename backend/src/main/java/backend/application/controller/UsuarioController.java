@@ -42,7 +42,7 @@ public class UsuarioController {
 	}
 	
 	@GetMapping("/list/{id}")
-	public Usuario buscarId(@PathVariable Long id){
+	public Usuario buscarId(@PathVariable String id){
 		return usuarioservice.buscarUsuario(id);
 	}
 	
@@ -116,7 +116,7 @@ public class UsuarioController {
 	}
 	
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<Usuario> eliminar(@PathVariable Long id){
+	public ResponseEntity<Usuario> eliminar(@PathVariable String id){
 		System.out.println("🗑️ Recibiendo petición DELETE para ID: " + id);
 		Usuario obj = usuarioservice.buscarUsuario(id);
 		

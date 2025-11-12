@@ -31,7 +31,7 @@ public class ProductoController {
     }
 
     @GetMapping("/list/{id}")
-    public ResponseEntity<?> buscarId(@PathVariable Long id) {
+    public ResponseEntity<?> buscarId(@PathVariable String id) {
         try {
             System.out.println("🔍 Buscando producto ID: " + id);
             Producto producto = productoService.buscarProducto(id);
@@ -92,7 +92,7 @@ public class ProductoController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+    public ResponseEntity<?> eliminar(@PathVariable String id) {
         try {
             System.out.println("🗑️ Intentando eliminar producto ID: " + id);
             Producto obj = productoService.buscarProducto(id);

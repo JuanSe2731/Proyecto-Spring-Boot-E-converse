@@ -4,14 +4,11 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import backend.application.model.Usuario;
 import backend.application.repository.UsuarioRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
 
 @Service
-@Transactional
 public class UsuarioService implements IUsuarioService{
 	
 	@Autowired
@@ -34,7 +31,7 @@ public class UsuarioService implements IUsuarioService{
 	}
 
 	@Override
-	public Usuario buscarUsuario(Long id) {
+	public Usuario buscarUsuario(String id) {
 		System.out.println("🔍 Buscando usuario con ID: " + id + " (tipo: " + id.getClass().getName() + ")");
 		
 		// Intentar buscar en la lista primero
@@ -67,7 +64,7 @@ public class UsuarioService implements IUsuarioService{
 	}
 
 	@Override
-	public int borrarUsuario(Long id) {
+	public int borrarUsuario(String id) {
 		usuarioRepository.deleteById(id);
 		return 1;
 	}

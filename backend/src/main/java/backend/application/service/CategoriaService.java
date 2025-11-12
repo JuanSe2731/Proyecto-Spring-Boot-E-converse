@@ -2,13 +2,12 @@ package backend.application.service;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import backend.application.model.Categoria;
 import backend.application.repository.CategoriaRepository;
-import jakarta.transaction.Transactional;
+
+import org.springframework.stereotype.Service;
 
 @Service
-@Transactional
 public class CategoriaService implements ICategoriaService {
 	
 	@Autowired
@@ -25,12 +24,12 @@ public class CategoriaService implements ICategoriaService {
     }
 
     @Override
-    public Categoria buscarCategoria(Long id) {
+    public Categoria buscarCategoria(String id) {
         return categoriaRepository.findById(id).orElse(null);
     }
 
     @Override
-    public int borrarCategoria(Long id) {
+    public int borrarCategoria(String id) {
         categoriaRepository.deleteById(id);
         return 1;
     }

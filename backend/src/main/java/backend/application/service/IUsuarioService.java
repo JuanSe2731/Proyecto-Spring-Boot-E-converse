@@ -10,9 +10,9 @@ public interface IUsuarioService {
 	
 	Usuario nuevoUsuario(Usuario usuario);
 	
-	Usuario buscarUsuario(Long id);
+	Usuario buscarUsuario(String id);
 	
-	int borrarUsuario(Long id);
+	int borrarUsuario(String id);
 	
 	Usuario actualizarUsuario(Usuario usuario);
 

@@ -6,6 +6,6 @@ import backend.application.model.Carrito;
 public interface ICarritoService {
 	List<Carrito> getCarritos();
     Carrito nuevoCarrito(Carrito carrito);
-    Carrito buscarCarrito(Long id);
-    int borrarCarrito(Long id);
+    Carrito buscarCarrito(String id);
+    int borrarCarrito(String id);
 }

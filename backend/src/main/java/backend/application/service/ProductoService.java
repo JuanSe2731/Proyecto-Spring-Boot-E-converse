@@ -2,13 +2,12 @@ package backend.application.service;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import backend.application.model.Producto;
 import backend.application.repository.ProductoRepository;
-import jakarta.transaction.Transactional;
+
+import org.springframework.stereotype.Service;
 
 @Service
-@Transactional
 public class ProductoService implements IProductoService {
 	
 	@Autowired
@@ -25,12 +24,12 @@ public class ProductoService implements IProductoService {
     }
 
     @Override
-    public Producto buscarProducto(Long id) {
+    public Producto buscarProducto(String id) {
         return productoRepository.findById(id).orElse(null);
     }
 
     @Override
-    public int borrarProducto(Long id) {
+    public int borrarProducto(String id) {
         productoRepository.deleteById(id);
         return 1;
     }

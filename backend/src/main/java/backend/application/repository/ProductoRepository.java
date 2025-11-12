@@ -1,9 +1,9 @@
 package backend.application.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 import backend.application.model.Producto;
 
-public interface ProductoRepository extends JpaRepository<Producto, Long>{
+public interface ProductoRepository extends MongoRepository<Producto, String>{
 
 }

@@ -7,7 +7,7 @@ public interface IProductoService {
 	
 	List<Producto> getProductos();
     Producto nuevoProducto(Producto producto);
-    Producto buscarProducto(Long id);
-    int borrarProducto(Long id);
+    Producto buscarProducto(String id);
+    int borrarProducto(String id);
 	
 }

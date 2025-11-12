@@ -25,7 +25,7 @@ public class RolController {
 
     // Obtener un rol por ID
     @GetMapping("/list/{id}")
-    public ResponseEntity<Rol> obtenerRolPorId(@PathVariable Long id) {
+    public ResponseEntity<Rol> obtenerRolPorId(@PathVariable String id) {
         Optional<Rol> rol = rolRepository.findById(id);
         return rol.map(ResponseEntity::ok)
                   .orElse(ResponseEntity.notFound().build());
@@ -67,7 +67,7 @@ public class RolController {
 
     // Eliminar un rol
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> eliminarRol(@PathVariable Long id) {
+    public ResponseEntity<?> eliminarRol(@PathVariable String id) {
         try {
             System.out.println("🗑️ Intentando eliminar rol ID: " + id);
             

@@ -6,6 +6,6 @@ import backend.application.model.Pedido;
 public interface IPedidoService {
 	List<Pedido> getPedidos();
 	Pedido nuevoPedido(Pedido pedido);
-	Pedido buscarPedido(Long id);
-	int borrarPedido(Long id);
+	Pedido buscarPedido(String id);
+	int borrarPedido(String id);
 }

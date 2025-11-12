@@ -120,7 +120,7 @@ public class AuthController {
             }
 
             // Obtener el rol de Cliente (id_rol = 2 según la imagen que proporcionaste)
-            Rol rolCliente = rolRepository.findById(2L).orElse(null);
+            Rol rolCliente = rolRepository.findById("2").orElse(null);
             if (rolCliente == null) {
                 return ResponseEntity.status(500).body(Map.of("message", "Error: Rol de Cliente no encontrado en la base de datos"));
             }

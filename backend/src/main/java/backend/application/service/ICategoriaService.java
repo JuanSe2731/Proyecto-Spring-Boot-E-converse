@@ -7,7 +7,7 @@ public interface ICategoriaService {
 	
 	List<Categoria> getCategorias();
     Categoria nuevaCategoria(Categoria categoria);
-    Categoria buscarCategoria(Long id);
-    int borrarCategoria(Long id);
+    Categoria buscarCategoria(String id);
+    int borrarCategoria(String id);
 	
 }

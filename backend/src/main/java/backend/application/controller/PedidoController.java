@@ -22,7 +22,7 @@ public class PedidoController {
 	}
 	
 	@GetMapping("/list/{id}")
-	public Pedido buscarId(@PathVariable Long id) {
+	public Pedido buscarId(@PathVariable String id) {
 		return pedidoService.buscarPedido(id);
 	}
 	
@@ -47,7 +47,7 @@ public class PedidoController {
 	}
 	
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<Pedido> eliminar(@PathVariable Long id) {
+	public ResponseEntity<Pedido> eliminar(@PathVariable String id) {
 		Pedido obj = pedidoService.buscarPedido(id);
 		if (obj != null) {
 			pedidoService.borrarPedido(id);

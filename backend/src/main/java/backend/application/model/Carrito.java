@@ -1,66 +1,77 @@
 package backend.application.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+//import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "carrito")
+@Document("carrito")
 public class Carrito {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idCarrito;
-
-    @OneToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
+    private String idCarrito;
     private Usuario usuario;
-
-    @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
+    private List<ItemCarrito> productos;
     
-    @JsonIgnore  // Evita serialización circular
-    @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CarritoDetalle> detalles;
+	public Carrito() {
+		super();
+	}
 
-    public Carrito() {}
+	public Carrito(String idCarrito, Usuario usuario, LocalDateTime fechaCreacion, List<ItemCarrito> productos) {
+		super();
+		this.idCarrito = idCarrito;
+		this.usuario = usuario;
+		this.fechaCreacion = fechaCreacion;
+		this.productos = productos;
+	}
 
-    public Carrito(Long idCarrito, Usuario usuario, LocalDateTime fechaCreacion) {
-        this.idCarrito = idCarrito;
-        this.usuario = usuario;
-        this.fechaCreacion = fechaCreacion;
-    }
+	public String getIdCarrito() {
+		return idCarrito;
+	}
 
-    public Long getIdCarrito() {
-        return idCarrito;
-    }
+	public void setIdCarrito(String idCarrito) {
+		this.idCarrito = idCarrito;
+	}
 
-    public void setIdCarrito(Long idCarrito) {
-        this.idCarrito = idCarrito;
-    }
+	public Usuario getUsuario() {
+		return usuario;
+	}
 
-    public Usuario getUsuario() {
-        return usuario;
-    }
+	public void setUsuario(Usuario usuario) {
+		this.usuario = usuario;
+	}
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
+	public LocalDateTime getFechaCreacion() {
+		return fechaCreacion;
+	}
 
-    public LocalDateTime getFechaCreacion() {
-        return fechaCreacion;
-    }
+	public void setFechaCreacion(LocalDateTime fechaCreacion) {
+		this.fechaCreacion = fechaCreacion;
+	}
 
-    public void setFechaCreacion(LocalDateTime fechaCreacion) {
-        this.fechaCreacion = fechaCreacion;
-    }
+	public List<ItemCarrito> getProductos() {
+		return productos;
+	}
 
-    public List<CarritoDetalle> getDetalles() {
-        return detalles;
-    }
+	public void setProductos(List<ItemCarrito> productos) {
+		this.productos = productos;
+	}
+    
+	
+	public BigDecimal getTotal() {
+	    if (productos == null || productos.isEmpty()) {
+	        return BigDecimal.ZERO;
+	    }
+	    return productos.stream()
+	            .map(ItemCarrito::getSubtotal)
+	            .reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
 
-    public void setDetalles(List<CarritoDetalle> detalles) {
-        this.detalles = detalles;
-    }
+    
+    
+
+    
 }

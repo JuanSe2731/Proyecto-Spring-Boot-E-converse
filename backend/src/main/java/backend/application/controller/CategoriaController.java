@@ -2,7 +2,7 @@ package backend.application.controller;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+//import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +31,7 @@ public class CategoriaController {
     }
 
     @GetMapping("/list/{id}")
-    public ResponseEntity<?> buscarId(@PathVariable Long id) {
+    public ResponseEntity<?> buscarId(@PathVariable String id) {
         try {
             System.out.println("🔍 Buscando categoría ID: " + id);
             Categoria categoria = categoriaService.buscarCategoria(id);
@@ -83,7 +83,7 @@ public class CategoriaController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+    public ResponseEntity<?> eliminar(@PathVariable String id) {
         try {
             System.out.println("🗑️ Intentando eliminar categoría ID: " + id);
             Categoria obj = categoriaService.buscarCategoria(id);
