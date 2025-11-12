@@ -5,7 +5,6 @@ import {
   EnvelopeIcon, 
   LockClosedIcon, 
   UserIcon, 
-  PhoneIcon,
   MapPinIcon 
 } from '@heroicons/react/24/outline';
 
@@ -19,7 +18,6 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    telefono: '',
     direccion: '',
   });
 
@@ -52,8 +50,14 @@ const Register = () => {
     
     if (!validate()) return;
 
-    // Preparar datos para enviar (sin confirmPassword)
-    const { confirmPassword, ...userData } = formData;
+    // Preparar datos para enviar al backend
+    // El backend espera: username, email, password
+    const userData = {
+      username: `${formData.nombre} ${formData.apellido}`.trim(),
+      email: formData.email,
+      password: formData.password,
+      direccion: formData.direccion || '' // Opcional
+    };
     
     const result = await register(userData);
     
@@ -203,30 +207,10 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Teléfono y Dirección */}
-            <div>
-              <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-2">
-                Teléfono
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <PhoneIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="telefono"
-                  name="telefono"
-                  type="tel"
-                  value={formData.telefono}
-                  onChange={handleChange}
-                  className="input-field pl-10"
-                  placeholder="3001234567"
-                />
-              </div>
-            </div>
-
+            {/* Dirección (Opcional) */}
             <div>
               <label htmlFor="direccion" className="block text-sm font-medium text-gray-700 mb-2">
-                Dirección
+                Dirección <span className="text-gray-400 text-xs">(Opcional)</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

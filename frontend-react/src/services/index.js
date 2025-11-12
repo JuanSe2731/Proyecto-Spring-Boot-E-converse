@@ -5,9 +5,12 @@ import api from './api';
 // ===========================
 
 export const authService = {
-  // Login
+  // Login (el backend usa 'username' pero nosotros usamos email como username)
   login: async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
+    const response = await api.post('/auth/login', { 
+      username: email,  // El backend espera 'username' pero usamos el email
+      password 
+    });
     return response.data;
   },
 
